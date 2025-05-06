@@ -1,20 +1,24 @@
 import streamlit as st
-import main as main
+from main import upload_pdf, create_vector_store, create_rag_pipeline, question_pdf
+import os
 
-st.title("Chat with PDF using Deepseek")
+st.set_page_config(page_title="Chat with PDF", layout="wide")
+st.title("Chat with your PDF using Gemini ")
 
-uploaded_file = st.file_uploader("Upload a PDF", type="pdf")
+uploaded_file = st.file_uploader("Upload a PDF file", type="pdf")
 
 if uploaded_file:
-    main.upload_pdf(uploaded_file)
-    pdf_path = main.pdfs_directory + uploaded_file.name
-    db = main.create_vector_store(pdf_path)
-    rag_chain = main.create_rag_pipeline(db)
+    upload_pdf(uploaded_file)
+    file_path = os.path.join("pdfs", uploaded_file.name)
 
-    st.success("PDF processed successfully. Ask your questions below.")
+    db = create_vector_store(file_path)
+    rag_chain = create_rag_pipeline(db)
 
-    question = st.chat_input("Ask something about your PDF")
-    if question:
-        st.chat_message("user").write(question)
-        answer = main.question_pdf(question, rag_chain)
-        st.chat_message("assistant").write(answer)
+    st.success("Ask a question below!")
+
+    user_question = st.text_input("Enter your question:")
+
+    if user_question:
+        response = question_pdf(user_question, rag_chain)
+        st.markdown("### Answer:")
+        st.write(response)
