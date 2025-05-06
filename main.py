@@ -1,18 +1,24 @@
 import os
+from dotenv import load_dotenv
 import pytesseract
 from pdf2image import convert_from_path
 from langchain.schema import Document
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
-from langchain_ollama import OllamaEmbeddings
-from langchain_ollama.llms import OllamaLLM
+from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from langchain.chains import RetrievalQA
+from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
+
+
+load_dotenv()
 
 pdfs_directory = 'pdfs/'
 
-embeddings = OllamaEmbeddings(model="deepseek-r1:1.5b")
-model = OllamaLLM(model="deepseek-r1:1.5b")
+embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
+model = ChatGoogleGenerativeAI(model="models/gemini-1.5-flash", temperature=0)
+# embeddings = OpenAIEmbeddings() 
+# model = ChatOpenAI(model_name="gpt-4", temperature=0)
 
 def upload_pdf(file):
     os.makedirs(pdfs_directory, exist_ok=True)
@@ -59,5 +65,4 @@ def create_rag_pipeline(db):
 def question_pdf(question, rag_chain):
     result = rag_chain.invoke({"query": question})
     return result['result']
-
 
